@@ -1,0 +1,11 @@
+.vscode/
+*.pyc
+gitparams.py
+noisylabels/
+mnist/
+mnist_fashion/
+mnist_mlp/
+mnist_fashion_mlp/
+cifar10/
+cifar100/
+mail/
