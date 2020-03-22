@@ -11,14 +11,15 @@ ALPHA = 0.1
 TEMPERATURE = 4
 RANDOM_SEED = 0
 NUM_CLASS = 10
+PLOT_NOISE = False
 
 DATASETS = ['mnist', 'mnist_fashion', 'cifar10', 'cifar100']
 MODELS = ['ce', 'boot_hard', 'boot_soft', 'forward', 'd2l', 'coteaching'] # 'backward'
 NOISETYPES = ['uniform', 'class-dependent', 'locally-concentrated', 'feature-dependent']
 
-PARAMS = {'mnist':{'epochs': 2, 'batch_size':256, 'patience': 10, 'alpha':0.1, 'temperature':16},
+PARAMS = {'mnist':{'epochs': 12, 'batch_size':256, 'patience': 10, 'alpha':0.1, 'temperature':16},
           'mnist_fashion':{'epochs': 40, 'batch_size':256, 'patience': 10, 'alpha':0.1, 'temperature':16},
-          'cifar10':{'epochs': 125, 'batch_size':128, 'patience': 23, 'alpha':0.3, 'temperature':2},
+          'cifar10':{'epochs': 100, 'batch_size':128, 'patience': 23, 'alpha':0.3, 'temperature':2},
           'cifar100':{'epochs': 125, 'batch_size':256, 'patience': 23}}
 
 def clean_empty_logs():

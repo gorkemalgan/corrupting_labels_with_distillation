@@ -30,7 +30,7 @@ from callbacks import csv_logger, model_checkpoint, early_stop, learning_rate_sc
 from visualizer import plot_cm, plot_dm, plot_matrix, plot_confused_samples, plot_confused_samples2, plot_overall
 from util import clean_empty_logs, create_folders, seed_everything
 from util import save_model, load_model, softmax, get_centroids, dm_centroid
-from util import MODELS, DATASETS, NOISETYPES, PARAMS, RANDOM_SEED
+from util import MODELS, DATASETS, NOISETYPES, PARAMS, RANDOM_SEED, PLOT_NOISE
 import util
 
 logcsv_cols = ['Dataset', 'Noise Type','Model Name', 'Noise Rate', 'Accuracy', 'Loss', 'Similarity']
@@ -83,20 +83,6 @@ def train_coteaching(dataset, model1, model2, epochs=50, batch_size=128, log_dir
         y_test_int = dataset.y_test_int()
         clean_index = dataset.idx_clean
         noisy_index = dataset.idx_noisy
-
-        '''
-        pred = model.predict(x_train)
-        pred_int = np.argmax(pred,axis=1)
-        acc_test = accuracy_score(y_test_int, np.argmax(model.predict(x_test), axis=1))
-        acc_mix = accuracy_score(y_train_int, pred_int)
-        acc_clean = accuracy_score(y_train_int[clean_index], pred_int[clean_index])
-        acc_noisy = accuracy_score(y_train_int[noisy_index], pred_int[noisy_index])
-        loss_test = np.mean(np.sum(-y_test*np.log(model2.predict(x_test)+1e-8),axis=1))
-        loss_mix = np.mean(np.sum(-y_train_noisy*np.log(pred+1e-8),axis=1))
-        loss_clean = np.mean(np.sum(-y_train_noisy[clean_index,:]*np.log(pred[clean_index,:]+1e-8),axis=1))
-        loss_noisy = np.mean(np.sum(-y_train_noisy[noisy_index,:]*np.log(pred[noisy_index,:]+1e-8),axis=1))
-        print("-%s: acc_test: %.4f - acc_mix: %.4f -  acc_clean: %.4f -  acc_noisy: %.4f" % (model.name, acc_test, acc_mix, acc_clean, acc_noisy))
-        '''
         
         if csv_path is not None:
             train_loss, train_acc = model.evaluate(x_train, y_train, verbose=0)
@@ -301,24 +287,27 @@ def prep_noisylabels(dataset, folders, noise_type, noise_ratio, verbose, alpha,t
     if not os.path.isdir(path+'/none/'):
         shutil.copytree('{}/models/teacher'.format(dataset), path+'/none/')
 
-    y_train_clean, y_test_clean = _dataset.y_train_int(), _dataset.y_test_int()
     # generate noisy labels
     y_train_noisy, y_test_noisy, probs = get_noisy_labels(_dataset, noise_type, noise_ratio)
-    if not isfile(folders['noisedir']+'cmtest.png'):
-        print('Noise for {} doesnt exist, creating it...'.format(folders['noisedir']))
-        # plot confused samples
-        if probs is not None:
-            np.save(folders['noisedir']+'probs.npy', probs)
-            _dataset_noisy = get_data(dataset, y_noisy=y_train_noisy, y_noisy_test=y_test_noisy)
-            plot_confused_samples(probs, _dataset_noisy, path=folders['noisedir']+'plots/')
-            plot_confused_samples2(probs, _dataset_noisy, path=folders['noisedir']+'plots/')
-        # save confusion matrix
-        cm = confusion_matrix(y_train_clean,y_train_noisy)
-        plot_matrix(cm, _dataset.class_names, title='Noise ratio: {}'.format(noise_ratio))
-        plt.savefig(folders['noisedir']+'cmtrain.png')
-        cm = confusion_matrix(y_test_clean,y_test_noisy)
-        plot_matrix(cm, _dataset.class_names, title='Noise ratio: {}'.format(noise_ratio))
-        plt.savefig(folders['noisedir']+'cmtest.png')
+    if PLOT_NOISE:
+        y_train_clean, y_test_clean = _dataset.y_train_int(), _dataset.y_test_int()
+        create_folders(folders['noisedir'])
+        if not isfile(folders['noisedir']+'cmtest.png'):
+            print('Noise for {} doesnt exist, creating it...'.format(folders['noisedir']))
+            # plot confused samples
+            if probs is not None:
+                create_folders(folders['noisedir']+'/plots')
+                np.save(folders['noisedir']+'probs.npy', probs)
+                _dataset_noisy = get_data(dataset, y_noisy=y_train_noisy, y_noisy_test=y_test_noisy)
+                plot_confused_samples(probs, _dataset_noisy, path=folders['noisedir']+'plots/')
+                plot_confused_samples2(probs, _dataset_noisy, path=folders['noisedir']+'plots/')
+            # save confusion matrix
+            cm = confusion_matrix(y_train_clean,y_train_noisy)
+            plot_matrix(cm, _dataset.class_names, title='Noise ratio: {}'.format(noise_ratio))
+            plt.savefig(folders['noisedir']+'cmtrain.png')
+            cm = confusion_matrix(y_test_clean,y_test_noisy)
+            plot_matrix(cm, _dataset.class_names, title='Noise ratio: {}'.format(noise_ratio))
+            plt.savefig(folders['noisedir']+'cmtest.png')
 
     return y_train_noisy, y_test_noisy
 
@@ -365,7 +354,7 @@ def main(dataset_name, model_name, epochs, batch_size, noise_type, noise_ratio, 
     # clean empty logs if there is any
     clean_empty_logs()
     # create necessary folders
-    create_folders(folders['dataset'], folders['logdir'], folders['noisedir'], folders['noisedir']+'/plots')
+    create_folders(folders['dataset'], folders['logdir'])
     # generate noisy labels
     y_train_noisy, y_test_noisy = prep_noisylabels(dataset_name, folders, noise_type, noise_ratio, verbose, alpha, temperature, is_dropout)
 
@@ -402,7 +391,7 @@ if __name__ == "__main__":
     parser.add_argument('-m', '--model_name', help="Model name: 'ce', 'forward', 'backward', 'boot_hard', 'boot_soft', 'd2l'.", required=False, type=str, default='ce')
     parser.add_argument('-e', '--epochs', help="The number of epochs to train for.", required=False, type=int, default=30)
     parser.add_argument('-b', '--batch_size', help="The batch size to use for training.", required=False, type=int, default=128)
-    parser.add_argument('-n', '--noise_type', help="'none', 'uniform', 'random', 'random_symmetric', 'pairwise', 'model_pred', 'xy'",required=False, type=str, default='xylocalized')
+    parser.add_argument('-n', '--noise_type', help="'none', 'uniform', 'random', 'random_symmetric', 'pairwise', 'model_pred', 'xy'",required=False, type=str, default='feature-dependent')
     parser.add_argument('-r', '--noise_ratio', help="The percentage of noisy labels [0, 100].", required=False, type=int, default=35)
     parser.add_argument('-t', '--temperature', help="Temeperature for student to be trained", required=False, type=int, default=16)
     parser.add_argument('-a', '--alpha', help="Alpha for learning with distillation", required=False, type=float, default=0.1)

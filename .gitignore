@@ -1,7 +1,6 @@
 .vscode/
 *.pyc
 gitparams.py
-noisylabels/
 mnist/
 mnist_fashion/
 mnist_mlp/

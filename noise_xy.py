@@ -59,7 +59,7 @@ def noise_softmax(x_train, y_train_int, probs, noise_ratio):
 
 def noise_xy_localized(features, y_train_int, noise_ratio):
   y_noisy = np.copy(y_train_int)
-  n_clusters = 10#round((noise_ratio*100)/10)
+  n_clusters = 20
   num_classes = len(unique_labels(y_train_int))
   for i in range(num_classes):
     idx = y_train_int == i
@@ -67,20 +67,27 @@ def noise_xy_localized(features, y_train_int, noise_ratio):
     y_pred = kmeans.labels_
 
     # number of samples for clusters
-    n_samples = [np.sum(y_pred==i) for i in range(n_clusters)]
+    n_samples = [np.sum(y_pred==k) for k in range(n_clusters)]
     sorted_idx = np.argsort(n_samples)
     # find clusters idx whose sum is equal for noise ratio
     n_tobecorrupted = round(np.sum(idx)*noise_ratio)
-    mid_id = round(n_clusters/2)
 
-    for i in range(len(sorted_idx)):
-      if n_samples[sorted_idx[i]] > n_tobecorrupted:
+    for j in range(len(sorted_idx)):
+      if n_samples[sorted_idx[j]] > n_tobecorrupted:
         break
-    if i > 0:
-      mid = sorted_idx[i-1]
+    if j > 0:
+      mid = sorted_idx[j-1]
     else:
       mid = sorted_idx[0]
     idx_class=np.where(idx==True)[0]
     idx2change=idx_class[y_pred==mid]
     y_noisy[idx2change] = np.random.choice(np.delete(np.arange(num_classes),i),1)
+    num_corrupted = len(idx2change)
+
+    for k in reversed(range(j-1)):
+      if n_samples[sorted_idx[k]] + num_corrupted < n_tobecorrupted:
+        idx2change=idx_class[y_pred==sorted_idx[k]]
+        y_noisy[idx2change] = np.random.choice(np.delete(np.arange(num_classes),i),1)
+        num_corrupted += len(idx2change)
+
   return y_noisy
