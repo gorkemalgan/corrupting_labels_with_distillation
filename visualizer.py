@@ -492,28 +492,29 @@ def visualize_all():
             plot_through_nrs(log_dir)
         # plot cosine similarities
 
-if __name__ == "__main__":      
-    #merge_images(['mnist_fashion_35.png','cifar100_35.png'],save_path='accuracies.png',orientation='vertical')
-    #merge_images(['./cifar100/logs_1/accs_train.png','./cifar100/logs_1/accs_val.png', './cifar100/logs_1/accs_test.png'],save_path='noiseratios.png')
+if __name__ == "__main__":  
+    # merge_images(['mnist_fashion_35.png','cifar100_35.png'],save_path='accuracies.png',orientation='vertical')       
+    merge_images(['./cifar100/logs_1/accs_train.png','./cifar100/logs_1/accs_val.png', './cifar100/logs_1/accs_test.png'],save_path='noiseratios.png')
     
     dataset = 'mnist_fashion'
-    noise_rate = 45
+    noise_rate = 35
     cols = ['acc', 'val_acc', 'test_acc']
     titles = {'acc':'Train accuracy', 'val_acc':'Validation accuracy', 'test_acc':'Test accuracy'}
-    images_list = []
-    for col in cols:
-        myDict = {'xy_cnn': {'path': '{}/logs_1/nr_{}_do/ce/xydistillation116/log.csv'.format(dataset,noise_rate), 'col': col, 'key':'xy_cnn'},
-                  'xy_mlp': {'path': '{}_mlp/logs_1/nr_{}_do/ce/xydistillation116/log.csv'.format(dataset,noise_rate), 'col': col, 'key':'xy_mlp'},
-                  'localized_cnn': {'path': '{}/logs_1/nr_{}_do/ce/xylocalized/log.csv'.format(dataset,noise_rate), 'col': col, 'key':'localized_cnn'},
-                  'localized_mlp': {'path': '{}_mlp/logs_1/nr_{}_do/ce/xylocalized/log.csv'.format(dataset,noise_rate), 'col': col, 'key':'localized_mlp'},
-                  'classdependent_cnn': {'path': '{}/logs_1/nr_{}_do/ce/ymodelpred/log.csv'.format(dataset,noise_rate), 'col': col, 'key':'classdependent_cnn'},
-                  'classdependent_mlp': {'path': '{}_mlp/logs_1/nr_{}_do/ce/ymodelpred/log.csv'.format(dataset,noise_rate), 'col': col, 'key':'classdependent_mlp'},
-                  'uniform_cnn': {'path': '{}/logs_1/nr_{}_do/ce/yuniform/log.csv'.format(dataset,noise_rate), 'col': col, 'key':'uniform_cnn'},
-                  'uniform_mlp': {'path': '{}_mlp/logs_1/nr_{}_do/ce/yuniform/log.csv'.format(dataset,noise_rate), 'col': col, 'key':'uniform_mlp'}}
-        save_path = '{}_{}_{}_.png'.format(dataset,noise_rate,col)
-        images_list.append(save_path)
-        plot_csvs(myDict,title='{} for %{} noise rate: {}'.format(titles[col],noise_rate, dataset.upper()), save_path=save_path, xlabel='# epochs', ylabel='Accuracy')
-    merge_images(images_list,save_path='{}_{}.png'.format(dataset,noise_rate))    
+    imagenames = []
+    for dataset in ['mnist_fashion', 'cifar100']:
+        images_list = []
+        for col in cols:
+            myDict = {'none': {'path': '{}/logs_1/nr_{}_do/ce/none/log.csv'.format(dataset,noise_rate), 'col': col, 'key':'none'},
+                    'uniform': {'path': '{}/logs_1/nr_{}_do/ce/uniform/log.csv'.format(dataset,noise_rate), 'col': col, 'key':'uniform'},
+                    'class-dependent': {'path': '{}/logs_1/nr_{}_do/ce/class-dependent/log.csv'.format(dataset,noise_rate), 'col': col, 'key':'class-dependent'},
+                    'locally-concentrated': {'path': '{}/logs_1/nr_{}_do/ce/locally-concentrated/log.csv'.format(dataset,noise_rate), 'col': col, 'key':'locally-concentrated'},
+                    'feature-dependent': {'path': '{}/logs_1/nr_{}_do/ce/feature-dependent/log.csv'.format(dataset,noise_rate), 'col': col, 'key':'feature-dependent'}}
+            save_path = '{}_{}_{}_.png'.format(dataset,noise_rate,col)
+            images_list.append(save_path)
+            plot_csvs(myDict,title='{} for %{} noise rate: {}'.format(titles[col],noise_rate, dataset.upper()), save_path=save_path, xlabel='# epochs', ylabel='Accuracy')
+        merge_images(images_list,save_path='{}_{}.png'.format(dataset,noise_rate)) 
+        imagenames.append('{}_{}.png'.format(dataset,noise_rate))
+    merge_images(imagenames,save_path='accuracies.png',orientation='vertical')   
 
     #plot_cosine_similarities('cifar10/logs_1/nr_45_do/ce/', 'cifar10')
     #logs_through_percentages('mnist_fashion/')

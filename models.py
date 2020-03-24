@@ -40,34 +40,7 @@ def get_model_architecture(dataset, is_dropout=False):
         # Create model
         model = Model(img_input, x)  
 
-    elif dataset.name == 'cifar10':
-
-        x = Conv2D(32, (3, 3), padding='same')(img_input)
-        x = Activation('relu')(x)
-
-        x = Conv2D(32, (3, 3))(x)
-        x = Activation('relu')(x)
-        x = MaxPooling2D(pool_size=(2, 2))(x)
-        if is_dropout:
-            x = Dropout(0.25)(x)
-        x = Conv2D(64, (3, 3), padding='same')(x)
-        x = Activation('relu')(x)
-        x = Conv2D(64, (3, 3))(x)
-        x = Activation('relu')(x)
-        x = MaxPooling2D(pool_size=(2, 2))(x)
-        if is_dropout:
-            x = Dropout(0.25)(x)
-        x = Flatten()(x)
-        x = Dense(512)(x)
-        x = Activation('relu')(x)
-        if is_dropout:
-            x = Dropout(0.5)(x)
-        x = Dense(num_classes, name='features')(x)
-        x = Activation('softmax')(x)
-        # Create model
-        model = Model(img_input, x)  
-
-    elif dataset.name == 'cifar100':
+    elif dataset.name == 'cifar100' or dataset.name == 'cifar10':
         # taken from: https://github.com/geifmany/cifar-vgg/tree/e7d4bd4807d15631177a2fafabb5497d0e4be3ba
         model = Sequential()
         weight_decay = 0.0005
@@ -165,8 +138,32 @@ def get_model_architecture(dataset, is_dropout=False):
         model.add(Dense(num_classes, name='features'))
         model.add(Activation('softmax'))
 
-        # architecture from: https://github.com/keras-team/keras/blob/master/examples/cifar10_resnet.py
-        #model = resnet_v1(img_shape,20,10)
+        '''
+        x = Conv2D(32, (3, 3), padding='same')(img_input)
+        x = Activation('relu')(x)
+
+        x = Conv2D(32, (3, 3))(x)
+        x = Activation('relu')(x)
+        x = MaxPooling2D(pool_size=(2, 2))(x)
+        if is_dropout:
+            x = Dropout(0.25)(x)
+        x = Conv2D(64, (3, 3), padding='same')(x)
+        x = Activation('relu')(x)
+        x = Conv2D(64, (3, 3))(x)
+        x = Activation('relu')(x)
+        x = MaxPooling2D(pool_size=(2, 2))(x)
+        if is_dropout:
+            x = Dropout(0.25)(x)
+        x = Flatten()(x)
+        x = Dense(512)(x)
+        x = Activation('relu')(x)
+        if is_dropout:
+            x = Dropout(0.5)(x)
+        x = Dense(num_classes, name='features')(x)
+        x = Activation('softmax')(x)
+        # Create model
+        model = Model(img_input, x) 
+        ''' 
 
     #model.summary()
     return model

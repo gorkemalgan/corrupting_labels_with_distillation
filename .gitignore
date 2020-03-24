@@ -1,10 +1,11 @@
 .vscode/
 *.pyc
 gitparams.py
-mnist/
-mnist_fashion/
+/mnist/
+/mnist_fashion/
+/cifar10
+/cifar10_smallnetwork
+/cifar100/
 mnist_mlp/
 mnist_fashion_mlp/
-cifar10/
-cifar100/
-mail/
+/tmp/
