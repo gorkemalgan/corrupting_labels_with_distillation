@@ -7,7 +7,7 @@ Code for paper "Label Noise Types and Their Effects on Learning".
 *Four types of different label noise types. Starting from left: no noise, uniform noise, class-dependent noise, locally-concentrated noise, feature-dependent noise (generated with proposed algorithm)*
 
 Requirements:
-* Tenxerflow 1.x
+* Tensorflow 1.x
 * numpy
 * scikit-learn
 * seaborn
